@@ -15,7 +15,7 @@ wine quality.
 (*
 TUTORIAL: F# Scripts
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-If you are familiar with this, you can skip to next topic. 
+If you are familiar with this, you can skip to next topic.
 *)
 
 // first, install required packages by running paket:
@@ -25,7 +25,7 @@ If you are familiar with this, you can skip to next topic.
 // directly execute code, seeing the results in the
 // interactive window:
 
-// select the code below and press alt+enter to execute: 
+// select the code below and press alt+enter to execute:
 let x = 1 + 2
 
 // the whole tutorial is written as 3 independent scripts.
@@ -43,10 +43,10 @@ Step 1: using the CSV Type Provider to read data.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 We will try to predict the quality of a wine, based on its
-chemical characteristics. We will use the Wine dataset from 
-the University of California Irvine Machine Learning 
+chemical characteristics. We will use the Wine dataset from
+the University of California Irvine Machine Learning
 Repository.
-The data is in CSV format. We will use the CSV type 
+The data is in CSV format. We will use the CSV type
 provider from fsharp.data to access the data.
 *)
 
@@ -56,7 +56,7 @@ open FSharp.Data
 [<Literal>]
 let redWinesPath = @"../data/winequality-red.csv"
 
-type Wines = 
+type Wines =
     CsvProvider<
         Sample = redWinesPath,
         Separators = ";",
@@ -71,14 +71,14 @@ let redWines = Wines.GetSample().Rows
 (*
 Tutorial: F# Sequences
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-If you are familiar with this, you can skip to next topic. 
+If you are familiar with this, you can skip to next topic.
 
 F# sequences represent a series of elements of one type.
 You can manipulate them with the Seq module.
-Sequences are lazy; they will compute only as needed. 
+Sequences are lazy; they will compute only as needed.
 Sequence manipulations can be chained, using the |>
-operator ("pipe-forward operator"), which feeds the 
-previous result to the next operation. 
+operator ("pipe-forward operator"), which feeds the
+previous result to the next operation.
 *)
 
 let exSequence = [ 1; 2; 3; 4; 5; 4; 3; 2; 1 ]
@@ -91,7 +91,7 @@ let exLazyMap = Seq.map (fun x -> x + 1) exSequence
 
 let exMapResult = Seq.toArray exLazyMap
 
-let exChaining = 
+let exChaining =
     exSequence
     // we keep only values > 2
     |> Seq.filter (fun x -> x > 2)
@@ -120,7 +120,7 @@ printfn "Wine quality: %.2f" exampleWine.Quality
 
 // we can extract specific pieces of information
 let averageQuality =
-    redWines 
+    redWines
     // for each row/wine, extract the quality
     |> Seq.map (fun wine -> wine.Quality)
     // compute the sequence average
@@ -143,7 +143,7 @@ Tutorial: XPlot charting library
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Displaying data as a chat helps understand it. We will use
-the XPlot library, a wrapper over Google Charts, to 
+the XPlot library, a wrapper over Google Charts, to
 visualize our wine dataset.
 *)
 
@@ -153,11 +153,11 @@ visualize our wine dataset.
 
 open XPlot.GoogleCharts
 
-[ (1.0,5.0); (2.0,7.0); (3.0,3.0); (4.0,10.0) ] 
+[ (1.0,5.0); (2.0,7.0); (3.0,3.0); (4.0,10.0) ]
 |> Chart.Line
 |> Chart.Show
 
-[ (1.0,5.0); (2.0,7.0); (3.0,3.0); (4.0,10.0) ] 
+[ (1.0,5.0); (2.0,7.0); (3.0,3.0); (4.0,10.0) ]
 |> Chart.Scatter
 |> Chart.Show
 
@@ -169,7 +169,7 @@ open XPlot.GoogleCharts
 |> Chart.Show
 
 // Breaking it down: a Chart expects pairs of values,
-// X and Y. We create a list of pairs, pass them 
+// X and Y. We create a list of pairs, pass them
 // to the desired Chart, and Show the result.
 
 // Pairs are represented by Tuples. A Tuple is just
@@ -181,9 +181,7 @@ let testTuple = ("FIRST",2)
 let first,second = testTuple
 // creating a... Triple? Truple?
 let anotherTuple = ("Data",42,"More Data")
-let a,b,c = anotherTuple
-
-
+//let a,b,c = anotherTuple
 
 (*
 Step 3: Visualizing our data with XPlot.
@@ -196,9 +194,11 @@ dataset.
 // plot wine density against sugar:
 // we extract a tuple for each wine in the sequence
 redWines
-|> Seq.map (fun wine -> 
+|> Seq.map (fun wine ->
     wine.Density, wine.``Residual sugar``)
 |> Chart.Scatter
+|> Chart.WithXTitle "Density"
+|> Chart.WithYTitle "Residual Sugar"
 |> Chart.Show
 
 // we count how many wines fall in each quality group
@@ -225,12 +225,52 @@ redWines
 |> Seq.map (fun wine -> wine.Density, wine.Quality)
 |> Chart.Scatter
 |> Chart.WithOptions options
+|> Chart.WithXTitle "Density"
+|> Chart.WithYTitle "Quality"
 |> Chart.Show
 
+// "fixed acidity";"volatile acidity";"citric acid";"residual sugar";"chlorides";"free sulfur dioxide";"total sulfur dioxide";"density";"pH";"sulphates";"alcohol";"quality"
 
 // [TODO] create a Scatter chart, plotting different
 // chemical characteristics against Quality.
 // If you had to pick one to predict Quality, which
 // one would you select?
+redWines
+|> Seq.map (fun wine ->
+    wine.``Chlorides``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithXTitle "Chlorides"
+|> Chart.WithYTitle "Quality"
+|> Chart.Show
 
+redWines
+|> Seq.map (fun wine ->
+    wine.``Total sulfur dioxide``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithXTitle "Total Sulfur Dioxide"
+|> Chart.WithYTitle "Quality"
+|> Chart.Show
 
+redWines
+|> Seq.map (fun wine ->
+    wine.``Citric acid``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithXTitle "Citric acid"
+|> Chart.WithYTitle "Quality"
+|> Chart.Show
+
+redWines
+|> Seq.map (fun wine ->
+    wine.``Alcohol``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithXTitle "Alcohol"
+|> Chart.WithYTitle "Quality"
+|> Chart.Show
+
+redWines
+|> Seq.map (fun wine ->
+    wine.``PH``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithXTitle "pH"
+|> Chart.WithYTitle "Quality"
+|> Chart.Show
