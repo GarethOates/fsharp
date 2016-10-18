@@ -35,6 +35,7 @@ let x = 1 + 2
 // the [TODO] sections contain tasks you need to solve.
 
 // [TODO] compute y = x + 1
+let y = x + 1
 
 
 
@@ -54,11 +55,11 @@ provider from fsharp.data to access the data.
 open FSharp.Data
 
 [<Literal>]
-let redWinesPath = @"../data/winequality-red.csv"
+let RedWinesPath = @"../data/winequality-red.csv"
 
 type Wines =
     CsvProvider<
-        Sample = redWinesPath,
+        Sample = RedWinesPath,
         Separators = ";",
         Schema = "float,float,float,float,float,float,float,float,float,float,float,float">
 // for convenience, we create a type alias
@@ -130,13 +131,19 @@ let averageQuality =
 // [TODO] how many wines do we have in the sample?
 // Hint: Seq.min, Seq.max, Seq.length might help
 
-let minQuality = System.Double.NaN
+let minQuality = // 3
+    redWines
+    |> Seq.map (fun wine -> wine.Quality)
+    |> Seq.min
 
-let maxQuality = System.Double.NaN
 
-let sampleSize = System.Int32.MaxValue
+let maxQuality = // 8
+    redWines
+    |> Seq.map (fun wine -> wine.Quality)
+    |> Seq.max
 
-
+let sampleSize = // 1599
+    redWines |> Seq.length
 
 (*
 Tutorial: XPlot charting library
@@ -229,48 +236,23 @@ redWines
 |> Chart.WithYTitle "Quality"
 |> Chart.Show
 
-// "fixed acidity";"volatile acidity";"citric acid";"residual sugar";"chlorides";"free sulfur dioxide";"total sulfur dioxide";"density";"pH";"sulphates";"alcohol";"quality"
+
 
 // [TODO] create a Scatter chart, plotting different
 // chemical characteristics against Quality.
 // If you had to pick one to predict Quality, which
 // one would you select?
 redWines
-|> Seq.map (fun wine ->
-    wine.``Chlorides``, wine.Quality)
-|> Chart.Scatter
-|> Chart.WithXTitle "Chlorides"
-|> Chart.WithYTitle "Quality"
+|> Seq.countBy (fun wine -> wine.Quality)
+|> Chart.Column
+|> Chart.WithXTitle "Quality"
+|> Chart.WithYTitle "Total"
 |> Chart.Show
 
 redWines
-|> Seq.map (fun wine ->
-    wine.``Total sulfur dioxide``, wine.Quality)
+|> Seq.map (fun wine -> wine.Alcohol, wine.Quality)
 |> Chart.Scatter
-|> Chart.WithXTitle "Total Sulfur Dioxide"
-|> Chart.WithYTitle "Quality"
-|> Chart.Show
-
-redWines
-|> Seq.map (fun wine ->
-    wine.``Citric acid``, wine.Quality)
-|> Chart.Scatter
-|> Chart.WithXTitle "Citric acid"
-|> Chart.WithYTitle "Quality"
-|> Chart.Show
-
-redWines
-|> Seq.map (fun wine ->
-    wine.``Alcohol``, wine.Quality)
-|> Chart.Scatter
+|> Chart.WithOptions options
 |> Chart.WithXTitle "Alcohol"
-|> Chart.WithYTitle "Quality"
-|> Chart.Show
-
-redWines
-|> Seq.map (fun wine ->
-    wine.``PH``, wine.Quality)
-|> Chart.Scatter
-|> Chart.WithXTitle "pH"
 |> Chart.WithYTitle "Quality"
 |> Chart.Show
