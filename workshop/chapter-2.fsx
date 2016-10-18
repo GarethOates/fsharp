@@ -24,11 +24,11 @@ open FSharp.Data
 open XPlot.GoogleCharts
 
 [<Literal>]
-let redWinesPath = @"../data/winequality-red.csv"
+let RedWinesPath = @"../data/winequality-red.csv"
 
 type Wines =
     CsvProvider<
-        Sample = redWinesPath,
+        Sample = RedWinesPath,
         Separators = ";",
         Schema = "float,float,float,float,float,float,float,float,float,float,float,float">
 
@@ -119,7 +119,7 @@ let learnAlcoholStump alcoholLevel =
     // average quality for wines with alcohol <= level
     let valueIfLow =
         redWines
-        |> Seq.filter (fun wine -> wine.Alcohol <= alcoholLevel)
+        |> Seq.filter (fun wine -> wine.Alcohol < alcoholLevel)
         |> Seq.averageBy (fun wine -> wine.Quality)
     // average quality for wines with alcohol > level
     let valueIfHigh =
@@ -227,13 +227,23 @@ redWines
 // alcoholStump1
 // alcoholStump2
 // hint: Seq.averageBy could be useful
-let cost0 = failwith "[TODO]"
-let cost1 = failwith "[TODO]"
-let cost2 = failwith "[TODO]"
+let cost0 =
+    redWines
+    |> Seq.averageBy (fun wine ->
+        pown ((wine.Quality)-(veryBasicPredictor wine)) 2)
 
+let cost1 =
+    redWines
+    |> Seq.averageBy (fun wine ->
+        pown ((wine.Quality)-(alcoholStump1 wine)) 2)
+
+let cost2 =
+    redWines
+    |> Seq.averageBy (fun wine ->
+        pown ((wine.Quality)-(alcoholStump2 wine)) 2)
 // what is our best model so far?
 
-
+// cost1 the alcoholStump1 predictor.
 
 (*
 Step 4: Finding the best stump
@@ -255,18 +265,18 @@ let levels =
     [ min + step .. step .. max - step ]
 
 // [TODO] find the alcohol stump with best cost
-// hint: Seq.minBy could be useful here
 let bestStump =
     levels
-    |> Seq.map (fun level -> failwith "[TODO]")
-    |> Seq.minBy (fun stump -> failwith "[TODO]")
+    |> Seq.map (fun level -> learnAlcoholStump level)
+    |> Seq.minBy (fun stump ->
+        redWines
+        |> Seq.averageBy (fun wine ->
+            pown ((wine.Quality)-(stump wine)) 2))
 
-// how does the cost compare to previous models?
 let bestCost =
     redWines
     |> Seq.averageBy (fun wine ->
         pown ((wine.Quality)-(bestStump wine)) 2)
-
 
 
 (*
