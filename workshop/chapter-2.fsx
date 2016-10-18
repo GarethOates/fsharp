@@ -26,7 +26,7 @@ open XPlot.GoogleCharts
 [<Literal>]
 let redWinesPath = @"../data/winequality-red.csv"
 
-type Wines = 
+type Wines =
     CsvProvider<
         Sample = redWinesPath,
         Separators = ";",
@@ -45,10 +45,10 @@ options.pointSize <- 10
 (*
 TUTORIAL: F# functions
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-If you are familiar with this, you can skip to next topic. 
+If you are familiar with this, you can skip to next topic.
 
 F# being "functional first", functions are a key element of
-the language. 
+the language.
 *)
 
 let addOne x = x + 1
@@ -111,22 +111,26 @@ redWines |> Seq.item 0 |> sugarStump 2.0
 redWines |> Seq.item 1 |> sugarStump 2.0
 
 // [TODO] write a more general stump for alcohol level.
-// if the wine alcohol level is below the given level, 
+// if the wine alcohol level is below the given level,
 // predict the average quality of wines below that level,
 // otherwise predict average quality of wines above.
 
 let learnAlcoholStump alcoholLevel =
     // average quality for wines with alcohol <= level
-    let valueIfLow = 
+    let valueIfLow =
         redWines
         |> Seq.filter (fun wine -> wine.Alcohol <= alcoholLevel)
         |> Seq.averageBy (fun wine -> wine.Quality)
     // average quality for wines with alcohol > level
     let valueIfHigh =
-        failwith "[TODO]"
+        redWines
+        |> Seq.filter( fun wine -> wine.Alcohol >= alcoholLevel)
+        |> Seq.averageBy (fun wine -> wine.Quality)
     // create a stump
     let predictor (wine:Wine) =
-        failwith "[TODO]"
+        if wine.Alcohol < alcoholLevel
+        then valueIfLow
+        else valueIfHigh
     // return the stump
     predictor
 
@@ -139,32 +143,32 @@ Let's take a look at how the stump works.
 *)
 
 // we will try 2 "reasonable" alcohol levels, between the
-// minimum and maximum on our sample 
-let minAlcohol = 
-    redWines 
-    |> Seq.map (fun wine -> wine.Alcohol) 
+// minimum and maximum on our sample
+let minAlcohol =
+    redWines
+    |> Seq.map (fun wine -> wine.Alcohol)
     |> Seq.min
-let maxAlcohol = 
-    redWines 
-    |> Seq.map (fun wine -> wine.Alcohol) 
+let maxAlcohol =
+    redWines
+    |> Seq.map (fun wine -> wine.Alcohol)
     |> Seq.max
 
-// [TODO] alcohol level is between 8.4 and 14.9; let's try 
+// [TODO] alcohol level is between 8.4 and 14.9; let's try
 // to learn stumps for alcohol level s of 10.0 and 12.0.
 
-let alcoholStump1 = failwith "[TODO]"
-let alcoholStump2 = failwith "[TODO]"
+let alcoholStump1 = learnAlcoholStump 10.0
+let alcoholStump2 = learnAlcoholStump 12.0
 
 
-// See what's happening on a plot 
-let actuals = 
-    redWines 
+// See what's happening on a plot
+let actuals =
+    redWines
     |> Seq.map (fun wine -> wine.Alcohol,wine.Quality)
-let predictions1 = 
-    redWines 
+let predictions1 =
+    redWines
     |> Seq.map (fun wine -> wine.Alcohol, alcoholStump1 wine)
-let predictions2 = 
-    redWines 
+let predictions2 =
+    redWines
     |> Seq.map (fun wine -> wine.Alcohol, alcoholStump2 wine)
 
 [ actuals; predictions1; predictions2 ]
@@ -177,7 +181,7 @@ let predictions2 =
 Step 3: Comparing Models
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Now that we have a few predictors, how do we pick one? To 
+Now that we have a few predictors, how do we pick one? To
 do this, we need a way to compare them. We would like one
 number to measure how good or bad a predictor is.
 We will create a cost function: a cost of 0 means "every
@@ -232,18 +236,18 @@ let cost2 = failwith "[TODO]"
 
 
 (*
-Step 4: Finding the best stump 
+Step 4: Finding the best stump
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 All we need now is to find the alcohol level that gives us
 the stump with lowest cost. We will create a "grid" of
-possible values between the min and max, and pick the best. 
+possible values between the min and max, and pick the best.
 *)
 
 let levels =
-    let values = 
+    let values =
         redWines
-        |> Seq.map (fun wine -> wine.Alcohol)    
+        |> Seq.map (fun wine -> wine.Alcohol)
     let min = values |> Seq.min
     let max = values |> Seq.max
     let width = max - min
@@ -257,10 +261,10 @@ let bestStump =
     |> Seq.map (fun level -> failwith "[TODO]")
     |> Seq.minBy (fun stump -> failwith "[TODO]")
 
-// how does the cost compare to previous models?        
-let bestCost = 
-    redWines 
-    |> Seq.averageBy (fun wine -> 
+// how does the cost compare to previous models?
+let bestCost =
+    redWines
+    |> Seq.averageBy (fun wine ->
         pown ((wine.Quality)-(bestStump wine)) 2)
 
 
@@ -288,7 +292,7 @@ redWines
 
 // now let's look at the residuals
 redWines
-|> Seq.map (fun wine -> 
+|> Seq.map (fun wine ->
     wine.Alcohol, wine.Quality - bestStump wine)
 |> Chart.Scatter
 |> Chart.WithOptions options
@@ -302,7 +306,7 @@ The residuals are not "evenly distributed".
 For alcohol levels under ~10.5, we seem to over-shoot,
 whereas in the 10.5-11.5 range, we under-predict.
 What we could try is find a new stump, trying to predict
-against the residuals, to correct our errors, and 
+against the residuals, to correct our errors, and
 combine it with the original stump.
 This is what we will do next.
 *)
