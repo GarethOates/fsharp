@@ -2,6 +2,8 @@ FRAMEWORK: >= NET45
 NUGET
   remote: https://www.nuget.org/api/v2
     FSharp.Data (2.3.2)
+    FSharp.Data.Toolbox.Twitter (0.18)
+      FSharp.Data (>= 2.2.3)
     Google.DataTable.Net.Wrapper (3.1.2)
     Newtonsoft.Json (9.0.1)
     XPlot.GoogleCharts (1.4.2)

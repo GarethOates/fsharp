@@ -2,4 +2,5 @@ framework >= net45
 source https://www.nuget.org/api/v2
 
 nuget fsharp.data
+nuget fsharp.data.toolbox.twitter
 nuget xplot.googlecharts
