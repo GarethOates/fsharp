@@ -267,7 +267,7 @@ let levels =
 // [TODO] find the alcohol stump with best cost
 let bestStump =
     levels
-    |> Seq.map (fun level -> learnAlcoholStump level)
+    |> Seq.map (learnAlcoholStump)
     |> Seq.minBy (fun stump ->
         redWines
         |> Seq.averageBy (fun wine ->
